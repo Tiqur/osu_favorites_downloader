@@ -1,3 +1,6 @@
+use reqwest;
+
 fn main() {
-    println!("Hello, world!");
+    let res = reqwest::blocking::get("http://httpbin.org/get").unwrap();
+    println!("{}", res.status());
 }
