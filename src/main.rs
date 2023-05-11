@@ -38,14 +38,14 @@ fn fetch_favourite_beatmaps(token: &String, user_id: i32) {
     header_map.insert(AUTHORIZATION, HeaderValue::from_str(("Bearer ".to_owned() + token).as_str()).unwrap());
 
     // Create URL
-    let api_endpoint_url = Url::parse((API_ENDPOINT.to_owned() + format!("/users/{}/beatmapsets/loved", user_id.to_string()).as_str()).as_str()).expect("Something went wrong parsing URL");
+    let api_endpoint_url = Url::parse((API_ENDPOINT.to_owned() + format!("/users/{}/beatmapsets/favourite", user_id.to_string()).as_str()).as_str()).expect("Something went wrong parsing URL");
     
     // Send request
     let res = client.get(api_endpoint_url)
         .headers(header_map)
         .send().expect("Something went wrong sending request");
 
-    println!("{}", res.status());
+    println!("{}", res.text().unwrap());
 }
 
 fn main() {
