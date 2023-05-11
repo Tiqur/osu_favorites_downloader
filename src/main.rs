@@ -23,7 +23,7 @@ fn fetch_access_token(client_id: String, client_secret: String) -> String {
         .body(format!("client_id={}&client_secret={}&grant_type=client_credentials&scope=public", client_id, client_secret))
         .send().expect("Something went wrong sending request");
 
-    let parsed_json: serde_json::Value = serde_json::from_str(res.text().unwrap().as_str()).unwrap();
+    let parsed_json: serde_json::Value = serde_json::from_slice(res.bytes().unwrap().as_ref()).unwrap();
     
     parsed_json["access_token"].as_str().expect("Something went wrong parsing Bearer token").to_string()
 }
@@ -38,14 +38,16 @@ fn fetch_favourite_beatmaps(token: &String, user_id: i32) {
     header_map.insert(AUTHORIZATION, HeaderValue::from_str(("Bearer ".to_owned() + token).as_str()).unwrap());
 
     // Create URL
-    let api_endpoint_url = Url::parse((API_ENDPOINT.to_owned() + format!("/users/{}/beatmapsets/favourite", user_id.to_string()).as_str()).as_str()).expect("Something went wrong parsing URL");
+    let api_endpoint_url = Url::parse((API_ENDPOINT.to_owned() + format!("/users/{}/beatmapsets/favourite?limit=1000000", user_id.to_string()).as_str()).as_str()).expect("Something went wrong parsing URL");
     
     // Send request
     let res = client.get(api_endpoint_url)
         .headers(header_map)
         .send().expect("Something went wrong sending request");
 
-    println!("{}", res.text().unwrap());
+    let parsed_json: serde_json::Value = serde_json::from_slice(res.bytes().unwrap().as_ref()).unwrap();
+
+    println!("{}", parsed_json);
 }
 
 fn main() {
