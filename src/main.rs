@@ -46,7 +46,7 @@ fn fetch_access_token(client_id: String, client_secret: String) -> String {
 
 fn fetch_favourite_beatmaps(token: &String, user_id: u32) -> HashSet<String> {
     let client = Client::new();
-    let mut offset = 1;
+    let mut offset = 0;
 
     // Create hashset to hold unique beatmapset ids
     let mut favorited_beatmap_ids: HashSet<String> = HashSet::new();
@@ -132,7 +132,7 @@ fn main() {
     let access_token = fetch_access_token(client_id, client_secret);
 
     // Get favorited beatmaps
-    let favourite_beatmap_ids = fetch_favourite_beatmaps(&access_token, 14852499);
+    let favourite_beatmap_ids = fetch_favourite_beatmaps(&access_token, 14610418);
 
     for id in favourite_beatmap_ids.iter() {
         println!("Downloading mapset: {}", id);
