@@ -7,6 +7,7 @@ use std::collections::HashSet;
 use std::env;
 use std::fs::File;
 use std::io::Write;
+use indicatif::{ProgressBar, ProgressStyle};
 
 const API_ENDPOINT: &str = "https://osu.ppy.sh/api/v2";
 
@@ -132,10 +133,18 @@ fn main() {
     let access_token = fetch_access_token(client_id, client_secret);
 
     // Get favorited beatmaps
-    let favourite_beatmap_ids = fetch_favourite_beatmaps(&access_token, 14610418);
+    let favourite_beatmap_ids = fetch_favourite_beatmaps(&access_token, 14852499);
 
+    // Create progress bar
+    let bar = ProgressBar::new(favourite_beatmap_ids.len() as u64);
+    bar.set_style(ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos}/{len} ({eta})").unwrap());
+
+    // Download mapsets
     for id in favourite_beatmap_ids.iter() {
-        println!("Downloading mapset: {}", id);
+        //println!("Downloading mapset: {}", id);
         download_beatmap_set(id);
+        bar.inc(1);
     }
+    
+    bar.finish();
 }
