@@ -5,6 +5,8 @@ use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYP
 use reqwest::Url;
 use std::collections::HashSet;
 use std::env;
+use std::fs::File;
+use std::io::Write;
 
 const API_ENDPOINT: &str = "https://osu.ppy.sh/api/v2";
 
@@ -90,7 +92,6 @@ fn fetch_favourite_beatmaps(token: &String, user_id: u32) -> HashSet<String> {
         }
 
         offset += 100;
-        std::thread::sleep(std::time::Duration::from_secs(1));
     }
 
     println!("{}", favorited_beatmap_ids.len());
@@ -98,21 +99,41 @@ fn fetch_favourite_beatmaps(token: &String, user_id: u32) -> HashSet<String> {
     favorited_beatmap_ids
 }
 
+fn download_beatmap_set(beatmap_set_id: u32) {
+    
+    let client = Client::new();
+    let url = Url::parse(format!("https://beatconnect.io/b/{}", beatmap_set_id).as_ref()).unwrap();
+
+    let osz_bytes = client
+        .get(url)
+        .send()
+        .expect("Something went wrong downloading beatmap")
+        .bytes()
+        .expect("Something went wrong parsing bytes");
+
+    write_bytes_to_file(&osz_bytes, "test.osz");
+}
+
+fn write_bytes_to_file(bytes: &[u8], file_path: &str) {
+    let mut file = File::create(file_path).unwrap();
+    file.write_all(bytes).unwrap();
+}
+
 fn main() {
+    download_beatmap_set(444335);
     // Load env variables
-    dotenv().ok();
+    //dotenv().ok();
 
-    // Set variables from env
-    let client_id = env::var("CLIENT_ID").expect("CLIENT_ID not set");
-    let client_secret = env::var("CLIENT_SECRET").expect("CLIENT_SECRET not set");
+    //// Set variables from env
+    //let client_id = env::var("CLIENT_ID").expect("CLIENT_ID not set");
+    //let client_secret = env::var("CLIENT_SECRET").expect("CLIENT_SECRET not set");
 
-    // Obtain access token using OAuth
-    let access_token = fetch_access_token(client_id, client_secret);
+    //// Obtain access token using OAuth
+    //let access_token = fetch_access_token(client_id, client_secret);
 
-    // Get favorited beatmaps
-    let favourite_beatmap_ids = fetch_favourite_beatmaps(&access_token, 14852499);
+    //// Get favorited beatmaps
+    //let favourite_beatmap_ids = fetch_favourite_beatmaps(&access_token, 14852499);
 
-    println!("{}", favourite_beatmap_ids.len());
     //for id in favourite_beatmap_ids.iter() {
     //    println!("{}", id);
     //}
