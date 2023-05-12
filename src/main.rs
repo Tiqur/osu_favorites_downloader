@@ -51,16 +51,16 @@ fn fetch_favourite_beatmaps(token: &String, user_id: u32) -> HashSet<String> {
     // Create hashset to hold unique beatmapset ids
     let mut favorited_beatmap_ids: HashSet<String> = HashSet::new();
 
-    // Create header map
-    let mut header_map = HeaderMap::new();
-    header_map.insert(ACCEPT, HeaderValue::from_static("application/json"));
-    header_map.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
-    header_map.insert(
-        AUTHORIZATION,
-        HeaderValue::from_str(("Bearer ".to_owned() + token).as_str()).unwrap(),
-    );
-
     loop {
+        // Create header map
+        let mut header_map = HeaderMap::new();
+        header_map.insert(ACCEPT, HeaderValue::from_static("application/json"));
+        header_map.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+        header_map.insert(
+            AUTHORIZATION,
+            HeaderValue::from_str(("Bearer ".to_owned() + token).as_str()).unwrap(),
+        );
+
         // Create URL
         let api_endpoint_url = Url::parse(
             (API_ENDPOINT.to_owned()
@@ -77,7 +77,7 @@ fn fetch_favourite_beatmaps(token: &String, user_id: u32) -> HashSet<String> {
         // Send request
         let res_text = client
             .get(api_endpoint_url)
-            .headers(header_map.clone())
+            .headers(header_map)
             .send()
             .expect("Something went wrong sending request")
             .text()
