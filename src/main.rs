@@ -42,8 +42,9 @@ fn fetch_access_token(client_id: String, client_secret: String) -> String {
         .to_string()
 }
 
-fn fetch_favourite_beatmaps(token: &String, user_id: i32) -> HashSet<String> {
+fn fetch_favourite_beatmaps(token: &String, user_id: u32) -> HashSet<String> {
     let client = Client::new();
+    let mut offset = 1;
 
     // Create hashset to hold unique beatmapset ids
     let mut favorited_beatmap_ids: HashSet<String> = HashSet::new();
@@ -57,28 +58,42 @@ fn fetch_favourite_beatmaps(token: &String, user_id: i32) -> HashSet<String> {
         HeaderValue::from_str(("Bearer ".to_owned() + token).as_str()).unwrap(),
     );
 
-    // Create URL
-    let api_endpoint_url = Url::parse(
-        (API_ENDPOINT.to_owned()
-            + format!("/users/{}/beatmapsets/favourite", user_id.to_string()).as_str())
-        .as_str(),
-    )
-    .expect("Something went wrong parsing URL");
 
-    // Send request
-    let res_text = client
-        .get(api_endpoint_url)
-        .headers(header_map)
-        .send()
-        .expect("Something went wrong sending request")
-        .text()
-        .unwrap();
+    loop {
+        // Create URL
+        let api_endpoint_url = Url::parse(
+            (API_ENDPOINT.to_owned()
+                + format!("/users/{}/beatmapsets/favourite?limit=100&offset={}", user_id.to_string(), offset.to_string()).as_str())
+            .as_str(),
+        )
+        .expect("Something went wrong parsing URL");
 
-    let re = Regex::new(r#""beatmapset_id":\s*(\d+)"#).unwrap();
+        // Send request
+        let res_text = client
+            .get(api_endpoint_url)
+            .headers(header_map.clone())
+            .send()
+            .expect("Something went wrong sending request")
+            .text()
+            .unwrap();
 
-    for captures in re.captures_iter(res_text.as_str()) {
-        favorited_beatmap_ids.insert(captures[1].to_string());
+        let re = Regex::new(r#""beatmapset_id":\s*(\d+)"#).unwrap();
+
+        for captures in re.captures_iter(res_text.as_str()) {
+            favorited_beatmap_ids.insert(captures[1].to_string());
+        }
+
+        // Break if response doesn't return 100 beatmap ids ( done )
+        // Can just check if total / 100 doesn't has a remainder
+        if favorited_beatmap_ids.len() % 100 != 0 {
+            break;
+        }
+
+        offset += 100;
+        std::thread::sleep(std::time::Duration::from_secs(1));
     }
+
+    println!("{}", favorited_beatmap_ids.len());
 
     favorited_beatmap_ids
 }
@@ -97,7 +112,8 @@ fn main() {
     // Get favorited beatmaps
     let favourite_beatmap_ids = fetch_favourite_beatmaps(&access_token, 14852499);
 
-    for id in favourite_beatmap_ids.iter() {
-        println!("{}", id);
-    }
+    println!("{}", favourite_beatmap_ids.len());
+    //for id in favourite_beatmap_ids.iter() {
+    //    println!("{}", id);
+    //}
 }
