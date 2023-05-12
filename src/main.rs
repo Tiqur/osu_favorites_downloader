@@ -94,12 +94,10 @@ fn fetch_favourite_beatmaps(token: &String, user_id: u32) -> HashSet<String> {
         offset += 100;
     }
 
-    println!("{}", favorited_beatmap_ids.len());
-
     favorited_beatmap_ids
 }
 
-fn download_beatmap_set(beatmap_set_id: u32) {
+fn download_beatmap_set(beatmap_set_id: &String) {
     
     let client = Client::new();
     let url = Url::parse(format!("https://beatconnect.io/b/{}", beatmap_set_id).as_ref()).unwrap();
@@ -111,7 +109,7 @@ fn download_beatmap_set(beatmap_set_id: u32) {
         .bytes()
         .expect("Something went wrong parsing bytes");
 
-    write_bytes_to_file(&osz_bytes, "test.osz");
+    write_bytes_to_file(&osz_bytes, format!("{}.osz", beatmap_set_id).as_ref());
 }
 
 fn write_bytes_to_file(bytes: &[u8], file_path: &str) {
@@ -120,21 +118,21 @@ fn write_bytes_to_file(bytes: &[u8], file_path: &str) {
 }
 
 fn main() {
-    download_beatmap_set(444335);
     // Load env variables
-    //dotenv().ok();
+    dotenv().ok();
 
-    //// Set variables from env
-    //let client_id = env::var("CLIENT_ID").expect("CLIENT_ID not set");
-    //let client_secret = env::var("CLIENT_SECRET").expect("CLIENT_SECRET not set");
+    // Set variables from env
+    let client_id = env::var("CLIENT_ID").expect("CLIENT_ID not set");
+    let client_secret = env::var("CLIENT_SECRET").expect("CLIENT_SECRET not set");
 
-    //// Obtain access token using OAuth
-    //let access_token = fetch_access_token(client_id, client_secret);
+    // Obtain access token using OAuth
+    let access_token = fetch_access_token(client_id, client_secret);
 
-    //// Get favorited beatmaps
-    //let favourite_beatmap_ids = fetch_favourite_beatmaps(&access_token, 14852499);
+    // Get favorited beatmaps
+    let favourite_beatmap_ids = fetch_favourite_beatmaps(&access_token, 14852499);
 
-    //for id in favourite_beatmap_ids.iter() {
-    //    println!("{}", id);
-    //}
+    for id in favourite_beatmap_ids.iter() {
+        println!("Downloading mapset: {}", id);
+        download_beatmap_set(id);
+    }
 }
