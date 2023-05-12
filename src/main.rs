@@ -60,12 +60,16 @@ fn fetch_favourite_beatmaps(token: &String, user_id: u32) -> HashSet<String> {
         HeaderValue::from_str(("Bearer ".to_owned() + token).as_str()).unwrap(),
     );
 
-
     loop {
         // Create URL
         let api_endpoint_url = Url::parse(
             (API_ENDPOINT.to_owned()
-                + format!("/users/{}/beatmapsets/favourite?limit=100&offset={}", user_id.to_string(), offset.to_string()).as_str())
+                + format!(
+                    "/users/{}/beatmapsets/favourite?limit=100&offset={}",
+                    user_id.to_string(),
+                    offset.to_string()
+                )
+                .as_str())
             .as_str(),
         )
         .expect("Something went wrong parsing URL");
@@ -98,7 +102,6 @@ fn fetch_favourite_beatmaps(token: &String, user_id: u32) -> HashSet<String> {
 }
 
 fn download_beatmap_set(beatmap_set_id: &String) {
-    
     let client = Client::new();
     let url = Url::parse(format!("https://beatconnect.io/b/{}", beatmap_set_id).as_ref()).unwrap();
 
