@@ -5,7 +5,7 @@ use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYP
 use reqwest::Url;
 use std::collections::HashSet;
 use std::env;
-use std::fs::File;
+use std::fs;
 use std::io::Write;
 use indicatif::{ProgressBar, ProgressStyle};
 
@@ -113,17 +113,27 @@ fn download_beatmap_set(beatmap_set_id: &String) {
         .bytes()
         .expect("Something went wrong parsing bytes");
 
-    write_bytes_to_file(&osz_bytes, format!("{}.osz", beatmap_set_id).as_ref());
+    write_bytes_to_file(&osz_bytes, format!("output/{}.osz", beatmap_set_id).as_ref());
 }
 
 fn write_bytes_to_file(bytes: &[u8], file_path: &str) {
-    let mut file = File::create(file_path).unwrap();
+    let mut file = fs::File::create(file_path).unwrap();
     file.write_all(bytes).unwrap();
+}
+
+fn create_output_folder() {
+    let name = "output";
+    if !fs::metadata(name).is_ok() {
+        fs::create_dir(name).expect("Failed to create dir");
+    }
 }
 
 fn main() {
     // Load env variables
     dotenv().ok();
+
+    // Create output folder if it doesn't exist
+    create_output_folder();
 
     // Set variables from env
     let client_id = env::var("CLIENT_ID").expect("CLIENT_ID not set");
